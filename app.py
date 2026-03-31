@@ -311,8 +311,8 @@ profile = GAME_PROFILES[selected_game]
 average_bet = st.number_input(
     "Average bet per hand or spin ($)",
     min_value=0.01,
-    value=25.0,
-    step=5.0,
+    value=5.0,
+    step=1.0,
 )
 
 goal_label = st.selectbox("Select goal", [label for label, _ in GOAL_OPTIONS])
