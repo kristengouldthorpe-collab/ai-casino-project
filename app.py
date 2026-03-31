@@ -155,9 +155,9 @@ GAME_PROFILES: Dict[str, GameProfile] = {
 
 
 GOAL_OPTIONS: List[tuple[str, int]] = [
-    ("Prime â€” 2,500 points", 2500),
-    ("Signature â€” 25,000 points", 25000),
-    ("Masters â€” 100,000 points", 100000),
+    ("Prime” 2,500 points", 2500),
+    ("Signature” 25,000 points", 25000),
+    ("Masters” 100,000 points", 100000),
     ("400 points", 400),
     ("600 points", 600),
     ("800 points", 800),
@@ -201,7 +201,7 @@ TIER_BENEFITS = {
         "Carry-on bag drop off with priority delivery to your stateroom",
         "Welcome lunch in the Main Dining Room",
         "Coastal Kitchen access on eligible ships",
-        "Flexible departure with Ã  la carte breakfast",
+        "Flexible departure with a la carte breakfast",
         "Annual complimentary Grand Suite on one cruise",
     ],
 }
@@ -265,27 +265,28 @@ def human_explanation(game: str, goal_points: int, results: dict, profile: GameP
         timing_text = f"about {hours:,.0f} hours of play"
 
     base = (
-        f"To reach {goal_points:,} points playing {game}, you would need roughly {timing_text} at your current settings. "
-        f"That works out to about {rounds:,.0f} hands or spins, around ${coin_in:,.0f} in total action, and an estimated ${loss:,.0f} in theoretical loss. "
+        f"To reach {goal_points:,} points playing {game}, you would need about {timing_text}. "
+        f"That works out to around {rounds:,.0f} hands or spins, around ${coin_in:,.0f} in total action, and an estimated ${loss:,.0f} in theoretical loss. "
+        f"Friendly reality check - Real play doesn't follow a script. Some sessions will run betterm some worse. That's part of the game!"
     )
 
     if profile.points_mode == "coin_in":
         method = (
-            "Because this game earns points from the amount you cycle through the machine, your point pace is more straightforward to estimate. "
+            "Because this game earns points from the amount you cycle through the machine, your points are fairly straightforward to estimate. "
         )
     else:
         method = (
-            "Because this is a table game, Royal Caribbean does not publish a simple public point formula, so this result is best used as a planning estimate rather than a guarantee. "
+            "Because this is a table game, Royal Caribbean does not publish a point formula, so this result is best used as a planning estimate rather than a guarantee. "
         )
 
     if tier_name == "Prime":
-        close = "If your real goal is to unlock free casino drinks and the annual interior cruise benefit, Prime is the first big milestone."
+        close = "If your real goal is to unlock free casino drinks and the annual interior cruise benefit, Prime is the first big milestone. Keep in mind, this status can be earned over the course of the casino year, which runs from approx. April 1 thru March 31st."
     elif tier_name == "Signature":
         close = "Signature is a major jump because you move into stronger annual cruise value and extra onboard perks."
     elif tier_name == "Masters":
         close = "Masters is the top level, so this is a serious high-play target rather than a casual milestone."
     else:
-        close = "This is a useful checkpoint if you are trying to understand how quickly your play style builds toward offers and status."
+        close = "While this isn't a large milestone, you can check with the casino host to understand what instant certificates you will earn for this cruise based upon these points."
 
     return base + method + close
 
@@ -385,7 +386,7 @@ if tier_name in TIER_BENEFITS:
 
 with st.expander("How the estimate is calculated"):
     st.write(
-        "This tool uses your selected game, average bet, house edge, and rounds or hands per hour to estimate the amount of play needed to reach your selected point goal."
+        "This tool uses your selected game, average bet, house edge, and rounds or hands per hour to estimate the amount of play needed to reach your selected point goal. This is for informational and entertainment purposes only and was created by a fellow RC guest. It is not financial or gambling advice. Please play responsibily."
     )
 
     if profile.points_mode == "coin_in":
