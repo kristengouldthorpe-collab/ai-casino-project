@@ -2,313 +2,429 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 import streamlit as st
 
-try:
-    from openai import OpenAI
-except Exception:
-    OpenAI = None
+st.set_page_config(page_title="Royal Caribbean Casino Royale", layout="centered")
 
-st.set_page_config(page_title="AI Casino Project V1", layout="wide")
+# -----------------------------
+# Styling
+# -----------------------------
+ROYAL_BLUE = "#123B8F"
+ROYAL_GOLD = "#F7C948"
+ROYAL_LIGHT = "#F4F7FC"
+TEXT_DARK = "#1C2A3A"
+
+st.markdown(
+    f"""
+    <style>
+    .stApp {{
+        background: linear-gradient(180deg, #ffffff 0%, {ROYAL_LIGHT} 100%);
+    }}
+    .main .block-container {{
+        padding-top: 2rem;
+        padding-bottom: 3rem;
+        max-width: 860px;
+    }}
+    h1, h2, h3 {{
+        color: {ROYAL_BLUE};
+    }}
+    .playful-divider {{
+        font-size: 1.1rem;
+        letter-spacing: 0.25rem;
+        color: {ROYAL_GOLD};
+        margin: 0.4rem 0 1rem 0;
+        text-align: center;
+        font-weight: 700;
+    }}
+    .hero-card {{
+        background: white;
+        border: 1px solid rgba(18,59,143,0.12);
+        border-left: 8px solid {ROYAL_BLUE};
+        border-radius: 18px;
+        padding: 1rem 1.1rem;
+        box-shadow: 0 8px 24px rgba(18,59,143,0.08);
+        margin-bottom: 1rem;
+    }}
+    .result-card {{
+        background: white;
+        border: 1px solid rgba(18,59,143,0.12);
+        border-radius: 18px;
+        padding: 1rem 1.1rem;
+        box-shadow: 0 8px 24px rgba(18,59,143,0.08);
+        margin: 0.4rem 0 0.8rem 0;
+    }}
+    .result-label {{
+        color: {ROYAL_BLUE};
+        font-size: 0.95rem;
+        font-weight: 700;
+        margin-bottom: 0.15rem;
+        text-transform: none;
+    }}
+    .result-value {{
+        color: {TEXT_DARK};
+        font-size: 1.9rem;
+        font-weight: 800;
+        line-height: 1.2;
+    }}
+    .small-note {{
+        font-size: 0.92rem;
+        color: #4B5D79;
+    }}
+    .benefit-box {{
+        background: #ffffff;
+        border: 1px solid rgba(247,201,72,0.45);
+        border-radius: 14px;
+        padding: 0.85rem 1rem;
+        margin-top: 0.8rem;
+    }}
+    ul {{
+        margin-bottom: 0.2rem;
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 
+# -----------------------------
+# Data model
+# -----------------------------
 @dataclass
 class GameProfile:
     name: str
-    category: str
     house_edge: float
     rounds_per_hour: int
-    points_mode: str  # "coin_in" or "theo"
+    points_mode: str  # coin_in or theoretical_loss
     dollars_per_point: float | None = None
-    theo_per_point: float | None = None
+    theoretical_loss_per_point: float | None = None
     note: str = ""
 
 
 GAME_PROFILES: Dict[str, GameProfile] = {
     "Reel Slots": GameProfile(
         name="Reel Slots",
-        category="slots",
         house_edge=0.10,
         rounds_per_hour=500,
         points_mode="coin_in",
         dollars_per_point=5.0,
-        note="Royal Caribbean publishes 1 point per $5 on reel slot machines.",
+        note="Royal Caribbean publishes 1 point for every $5 of coin-in on reel slots.",
     ),
     "Video Poker": GameProfile(
         name="Video Poker",
-        category="video_poker",
         house_edge=0.03,
         rounds_per_hour=500,
         points_mode="coin_in",
         dollars_per_point=10.0,
-        note="Royal Caribbean publishes 1 point per $10 on video poker.",
+        note="Royal Caribbean publishes 1 point for every $10 of coin-in on video poker.",
     ),
     "Ultimate Texas Hold'em": GameProfile(
         name="Ultimate Texas Hold'em",
-        category="table",
         house_edge=0.022,
         rounds_per_hour=40,
-        points_mode="theo",
-        theo_per_point=5.0,
-        note="Royal does not publish a public table-game point formula, so this uses an editable estimate based on theoretical loss.",
+        points_mode="theoretical_loss",
+        theoretical_loss_per_point=5.0,
+        note="Royal Caribbean does not publish a simple public point formula for table games, so this uses an estimate based on theoretical loss.",
     ),
     "Blackjack": GameProfile(
         name="Blackjack",
-        category="table",
         house_edge=0.015,
         rounds_per_hour=70,
-        points_mode="theo",
-        theo_per_point=5.0,
-        note="Royal does not publish a public table-game point formula, so this uses an editable estimate based on theoretical loss.",
+        points_mode="theoretical_loss",
+        theoretical_loss_per_point=5.0,
+        note="Royal Caribbean does not publish a simple public point formula for table games, so this uses an estimate based on theoretical loss.",
     ),
     "Three Card Poker": GameProfile(
         name="Three Card Poker",
-        category="table",
         house_edge=0.034,
         rounds_per_hour=50,
-        points_mode="theo",
-        theo_per_point=5.0,
-        note="Royal does not publish a public table-game point formula, so this uses an editable estimate based on theoretical loss.",
+        points_mode="theoretical_loss",
+        theoretical_loss_per_point=5.0,
+        note="Royal Caribbean does not publish a simple public point formula for table games, so this uses an estimate based on theoretical loss.",
     ),
     "Craps": GameProfile(
         name="Craps",
-        category="table",
         house_edge=0.014,
         rounds_per_hour=45,
-        points_mode="theo",
-        theo_per_point=5.0,
-        note="Royal does not publish a public table-game point formula, so this uses an editable estimate based on theoretical loss.",
+        points_mode="theoretical_loss",
+        theoretical_loss_per_point=5.0,
+        note="Royal Caribbean does not publish a simple public point formula for table games, so this uses an estimate based on theoretical loss.",
     ),
 }
 
-# Seeded from a public Royal Caribbean campaign PDF; meant as an editable starter table.
-OFFER_TIERS: List[Tuple[int, str, str]] = [
-    (40000, "VIP2", "Top-tier instant reward / premium sailing access"),
-    (25000, "D01", "High-tier balcony or stronger comp territory"),
-    (15000, "D02", "Strong balcony / broad comp options"),
-    (9000, "D02A", "Mid-high tier offer"),
-    (6500, "D03", "Likely strong offer options"),
-    (4000, "D03A", "Likely free-cruise territory on select sailings"),
-    (3000, "D04", "Likely free interior / oceanview territory"),
-    (2000, "D05", "Entry comp level"),
-    (1500, "D06", "Lighter comp level / limited sailings"),
-    (1200, "D07", "Starter instant reward level"),
-    (800, "D08", "Smallest published starter tier in sample campaign"),
+
+GOAL_OPTIONS: List[tuple[str, int]] = [
+    ("Prime â€” 2,500 points", 2500),
+    ("Signature â€” 25,000 points", 25000),
+    ("Masters â€” 100,000 points", 100000),
+    ("400 points", 400),
+    ("600 points", 600),
+    ("800 points", 800),
+    ("1,200 points", 1200),
+    ("1,500 points", 1500),
+    ("2,000 points", 2000),
+    ("3,000 points", 3000),
+    ("4,000 points", 4000),
+    ("6,500 points", 6500),
+    ("9,000 points", 9000),
+    ("15,000 points", 15000),
+    ("40,000 points", 40000),
 ]
 
 
-def calculate_metrics(
+TIER_BENEFITS = {
+    "Prime": [
+        "Waived convenience fee for cashless wagering on your SeaPass card",
+        "Complimentary drinks in Casino Royale during operating hours",
+        "Discount on VOOM Surf & Stream internet packages",
+        "Exclusive rates for family and friends on additional staterooms",
+        "Annual complimentary interior stateroom on one cruise",
+        "Tier priority contact number",
+    ],
+    "Signature": [
+        "Everything included with Prime",
+        "Complimentary Wi-Fi for 1 device",
+        "$350 jewelry and boutique credit",
+        "15% Vitality Spa discount",
+        "Annual complimentary balcony stateroom on one cruise",
+        "Special offers with partnership casinos",
+    ],
+    "Masters": [
+        "Everything included with Signature",
+        "Complimentary Wi-Fi for 2 devices",
+        "$550 jewelry and boutique credit",
+        "20% Vitality Spa discount",
+        "Priority entertainment access and dining reservations",
+        "Onboard credit",
+        "Priority access at the terminal",
+        "Carry-on bag drop off with priority delivery to your stateroom",
+        "Welcome lunch in the Main Dining Room",
+        "Coastal Kitchen access on eligible ships",
+        "Flexible departure with Ã  la carte breakfast",
+        "Annual complimentary Grand Suite on one cruise",
+    ],
+}
+
+
+def calculate_goal_results(
     profile: GameProfile,
-    avg_bet: float,
-    hours: float,
-    rounds_per_hour_override: int | None = None,
-    house_edge_override: float | None = None,
-    dollars_per_point_override: float | None = None,
-    theo_per_point_override: float | None = None,
+    average_bet: float,
+    goal_points: int,
+    rounds_per_hour: int,
+    house_edge_percent: float,
 ) -> dict:
-    rounds_per_hour = rounds_per_hour_override or profile.rounds_per_hour
-    house_edge = (house_edge_override / 100.0) if house_edge_override is not None else profile.house_edge
-    total_rounds = rounds_per_hour * hours
-    total_coin_in = avg_bet * total_rounds
-    theo = total_coin_in * house_edge
+    house_edge = house_edge_percent / 100.0
 
     if profile.points_mode == "coin_in":
-        dollars_per_point = dollars_per_point_override or profile.dollars_per_point or 5.0
-        points = total_coin_in / dollars_per_point
+        dollars_per_point = float(profile.dollars_per_point or 5.0)
+        required_coin_in = goal_points * dollars_per_point
+        required_theoretical_loss = required_coin_in * house_edge
+        required_rounds = required_coin_in / average_bet if average_bet > 0 else 0
+        required_hours = required_rounds / rounds_per_hour if rounds_per_hour > 0 else 0
     else:
-        theo_per_point = theo_per_point_override or profile.theo_per_point or 5.0
-        points = theo / theo_per_point
+        theoretical_loss_per_point = float(profile.theoretical_loss_per_point or 5.0)
+        required_theoretical_loss = goal_points * theoretical_loss_per_point
+        required_coin_in = required_theoretical_loss / house_edge if house_edge > 0 else 0
+        required_rounds = required_coin_in / average_bet if average_bet > 0 else 0
+        required_hours = required_rounds / rounds_per_hour if rounds_per_hour > 0 else 0
 
     return {
-        "rounds_per_hour": rounds_per_hour,
+        "required_hours": required_hours,
+        "required_theoretical_loss": required_theoretical_loss,
+        "required_coin_in": required_coin_in,
+        "required_rounds": required_rounds,
         "house_edge": house_edge,
-        "total_rounds": total_rounds,
-        "coin_in": total_coin_in,
-        "theo": theo,
-        "points": points,
     }
 
 
 
-def likely_offer(points: float) -> tuple[str, str]:
-    rounded = math.floor(points)
-    for threshold, code, desc in OFFER_TIERS:
-        if rounded >= threshold:
-            return f"{code} tier (â‰¥ {threshold:,} pts)", desc
-    return "Below starter comp tier", "Likely discount-only / weak offer territory based on the seeded sample campaign."
+def get_tier_name(goal_points: int) -> str | None:
+    if goal_points >= 100000:
+        return "Masters"
+    if goal_points >= 25000:
+        return "Signature"
+    if goal_points >= 2500:
+        return "Prime"
+    return None
 
 
 
-def build_fallback_explanation(game: str, metrics: dict, offer_label: str, offer_desc: str) -> str:
-    points = metrics["points"]
-    theo = metrics["theo"]
-    coin_in = metrics["coin_in"]
-    house_edge_pct = metrics["house_edge"] * 100
+def human_explanation(game: str, goal_points: int, results: dict, profile: GameProfile) -> str:
+    hours = results["required_hours"]
+    loss = results["required_theoretical_loss"]
+    coin_in = results["required_coin_in"]
+    rounds = results["required_rounds"]
+    tier_name = get_tier_name(goal_points)
 
-    if game in {"Reel Slots", "Video Poker"}:
-        earn_comment = "This game earns points directly from coin-in, so your point pace is predictable."
+    if hours < 1:
+        timing_text = f"less than an hour of play"
+    elif hours < 10:
+        timing_text = f"about {hours:,.1f} hours of play"
     else:
-        earn_comment = "This table-game estimate is driven by theoretical loss, so it is directionally useful but not official."
+        timing_text = f"about {hours:,.0f} hours of play"
 
-    return (
-        f"You generated an estimated ${coin_in:,.0f} of action and ${theo:,.0f} of theoretical loss at an assumed {house_edge_pct:.1f}% house edge. "
-        f"That translates to about {points:,.0f} points. {earn_comment} Based on the seeded offer ladder, that puts you in {offer_label}, which suggests {offer_desc.lower()} "
-        f"If your goal is to maximize offers while controlling expected loss, compare this game against one or two alternatives before you play."
+    base = (
+        f"To reach {goal_points:,} points playing {game}, you would need roughly {timing_text} at your current settings. "
+        f"That works out to about {rounds:,.0f} hands or spins, around ${coin_in:,.0f} in total action, and an estimated ${loss:,.0f} in theoretical loss. "
     )
 
+    if profile.points_mode == "coin_in":
+        method = (
+            "Because this game earns points from the amount you cycle through the machine, your point pace is more straightforward to estimate. "
+        )
+    else:
+        method = (
+            "Because this is a table game, Royal Caribbean does not publish a simple public point formula, so this result is best used as a planning estimate rather than a guarantee. "
+        )
+
+    if tier_name == "Prime":
+        close = "If your real goal is to unlock free casino drinks and the annual interior cruise benefit, Prime is the first big milestone."
+    elif tier_name == "Signature":
+        close = "Signature is a major jump because you move into stronger annual cruise value and extra onboard perks."
+    elif tier_name == "Masters":
+        close = "Masters is the top level, so this is a serious high-play target rather than a casual milestone."
+    else:
+        close = "This is a useful checkpoint if you are trying to understand how quickly your play style builds toward offers and status."
+
+    return base + method + close
 
 
-def build_ai_prompt(game: str, avg_bet: float, hours: float, metrics: dict, offer_label: str, offer_desc: str) -> str:
-    return f"""
-You are a cruise casino comps coach.
 
-Explain this simulation in plain English. Keep it practical, not academic.
-
-Inputs:
-- Game: {game}
-- Average bet: ${avg_bet:,.2f}
-- Hours played: {hours}
-- Estimated rounds per hour: {metrics['rounds_per_hour']}
-- Estimated coin-in: ${metrics['coin_in']:,.2f}
-- Assumed house edge: {metrics['house_edge'] * 100:.2f}%
-- Estimated theo: ${metrics['theo']:,.2f}
-- Estimated points: {metrics['points']:,.0f}
-- Likely offer tier: {offer_label}
-- Offer interpretation: {offer_desc}
-
-What to produce:
-1. A 2-3 sentence summary of what this play level means.
-2. A short strategy section: how good this game is for balancing offers vs losses.
-3. One concrete recommendation.
-4. One caution about uncertainty if the game is a table game.
-
-Do not invent official Royal Caribbean formulas. If the game is a table game, explicitly say this is an estimate.
-""".strip()
+def playful_divider() -> None:
+    st.markdown('<div class="playful-divider">$ $ $ $ $ $ $ $ $ $ $ $ $</div>', unsafe_allow_html=True)
 
 
-st.title("AI Casino Project â€” V1")
-st.caption("Estimate casino points, theoretical loss, and likely cruise offer tiers.")
+# -----------------------------
+# UI
+# -----------------------------
+st.title("Royal Caribbean Casino Royale")
+st.caption("Choose your game, choose your point goal, and see how long it may take to get there.")
 
-with st.expander("What this V1 does"):
-    st.write(
-        "This first version models casino play using public Royal Caribbean point rules for slots/video poker, "
-        "plus editable estimates for table games. It then maps those points to a seeded offer ladder based on a public sample campaign."
-    )
+st.markdown(
+    f"""
+    <div class="hero-card">
+        <div class="small-note">
+            This version keeps the original assumptions for each game, but changes the flow so you start with a target.
+            The app then estimates how many hours you may need to play and what your estimated theoretical loss could be.
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
-left, right = st.columns([1, 1])
+playful_divider()
 
-with left:
-    game = st.selectbox("Game", list(GAME_PROFILES.keys()))
-    profile = GAME_PROFILES[game]
+selected_game = st.selectbox("Select game", list(GAME_PROFILES.keys()))
+profile = GAME_PROFILES[selected_game]
 
-    avg_bet = st.number_input("Average bet per hand / spin ($)", min_value=0.0, value=25.0, step=5.0)
-    hours = st.number_input("Hours played", min_value=0.0, value=4.0, step=0.5)
+average_bet = st.number_input(
+    "Average bet per hand or spin ($)",
+    min_value=0.01,
+    value=25.0,
+    step=5.0,
+)
 
-    st.subheader("Editable assumptions")
-    rounds_per_hour_override = st.number_input(
-        "Rounds / hands per hour",
+goal_label = st.selectbox("Select goal", [label for label, _ in GOAL_OPTIONS])
+goal_points = dict(GOAL_OPTIONS)[goal_label]
+
+playful_divider()
+
+st.subheader("Editable assumptions")
+col1, col2 = st.columns(2)
+with col1:
+    rounds_per_hour = st.number_input(
+        "Rounds or hands per hour",
         min_value=1,
         value=profile.rounds_per_hour,
         step=1,
     )
-    house_edge_override = st.number_input(
+with col2:
+    house_edge_percent = st.number_input(
         "House edge (%)",
         min_value=0.1,
-        value=profile.house_edge * 100,
+        value=round(profile.house_edge * 100, 2),
         step=0.1,
     )
 
-    dollars_per_point_override = None
-    theo_per_point_override = None
-
-    if profile.points_mode == "coin_in":
-        dollars_per_point_override = st.number_input(
-            "Dollars wagered per point",
-            min_value=0.1,
-            value=float(profile.dollars_per_point or 5.0),
-            step=0.5,
-        )
-    else:
-        theo_per_point_override = st.number_input(
-            "Estimated theo dollars per point",
-            min_value=0.1,
-            value=float(profile.theo_per_point or 5.0),
-            step=0.5,
-        )
-
-    use_ai = st.checkbox("Generate AI explanation", value=False)
-
-metrics = calculate_metrics(
+results = calculate_goal_results(
     profile=profile,
-    avg_bet=avg_bet,
-    hours=hours,
-    rounds_per_hour_override=rounds_per_hour_override,
-    house_edge_override=house_edge_override,
-    dollars_per_point_override=dollars_per_point_override,
-    theo_per_point_override=theo_per_point_override,
+    average_bet=average_bet,
+    goal_points=goal_points,
+    rounds_per_hour=rounds_per_hour,
+    house_edge_percent=house_edge_percent,
 )
 
-offer_label, offer_desc = likely_offer(metrics["points"])
+tier_name = get_tier_name(goal_points)
 
-with right:
-    st.subheader("Results")
-    a, b, c = st.columns(3)
-    a.metric("Estimated points", f"{metrics['points']:,.0f}")
-    b.metric("Estimated theo", f"${metrics['theo']:,.0f}")
-    c.metric("Likely tier", offer_label.split(" ")[0])
+playful_divider()
 
-    st.write(f"**Likely offer tier:** {offer_label}")
-    st.write(f"**Interpretation:** {offer_desc}")
-    st.info(profile.note)
+st.markdown('<div class="result-card"><div class="result-label">Hours you need to play</div>'
+            f'<div class="result-value">{results["required_hours"]:,.1f}</div></div>', unsafe_allow_html=True)
 
-    st.subheader("How the math works")
-    st.code(
-        f"coin_in = avg_bet Ã— rounds_per_hour Ã— hours\n"
-        f"coin_in = ${avg_bet:,.2f} Ã— {metrics['rounds_per_hour']} Ã— {hours} = ${metrics['coin_in']:,.2f}\n\n"
-        f"theo = coin_in Ã— house_edge\n"
-        f"theo = ${metrics['coin_in']:,.2f} Ã— {metrics['house_edge']*100:.2f}% = ${metrics['theo']:,.2f}\n\n"
-        + (
-            f"points = coin_in Ã· ${dollars_per_point_override:,.2f} per point\n"
-            f"points = ${metrics['coin_in']:,.2f} Ã· ${dollars_per_point_override:,.2f} = {metrics['points']:,.0f}"
-            if profile.points_mode == "coin_in"
-            else f"points = theo Ã· ${theo_per_point_override:,.2f} theo per point\n"
-            f"points = ${metrics['theo']:,.2f} Ã· ${theo_per_point_override:,.2f} = {metrics['points']:,.0f}"
-        )
-    )
+st.markdown('<div class="result-card"><div class="result-label">Estimated theoretical loss</div>'
+            f'<div class="result-value">${results["required_theoretical_loss"]:,.0f}</div></div>', unsafe_allow_html=True)
+
+st.markdown(
+    f"""
+    <div class="result-card">
+        <div class="result-label">Estimated total action</div>
+        <div class="result-value">${results['required_coin_in']:,.0f}</div>
+        <div class="small-note">This is the estimated amount cycled through the game to reach your point goal.</div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+playful_divider()
 
 st.subheader("Explanation")
-if use_ai and OpenAI is not None and st.secrets.get("OPENAI_API_KEY"):
-    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-    prompt = build_ai_prompt(game, avg_bet, hours, metrics, offer_label, offer_desc)
-    try:
-        response = client.responses.create(
-            model="gpt-5-mini",
-            input=prompt,
-        )
-        st.write(response.output_text)
-    except Exception as e:
-        st.warning(f"AI call failed, so fallback explanation is shown instead: {e}")
-        st.write(build_fallback_explanation(game, metrics, offer_label, offer_desc))
-else:
-    st.write(build_fallback_explanation(game, metrics, offer_label, offer_desc))
+st.write(human_explanation(selected_game, goal_points, results, profile))
+st.info(profile.note)
 
-with st.expander("Starter offer ladder used in V1"):
-    st.write(
-        "These thresholds are seeded from one public Royal Caribbean campaign PDF and should be treated as a starter ladder, not a universal truth."
-    )
-    st.table(
-        [{"Points threshold": threshold, "Code": code, "Interpretation": desc} for threshold, code, desc in OFFER_TIERS]
-    )
-
-with st.expander("Good next upgrades"):
+if tier_name in TIER_BENEFITS:
     st.markdown(
-        """
-- Add a compare mode: run two games side by side.
-- Save scenarios to a history table.
-- Replace the starter offer ladder with your own scraped or hand-curated examples.
-- Let users enter cruise line rules separately for Royal, Carnival, MGM, etc.
-- Add screenshots / OCR later if you want to parse real offers.
-"""
+        f"""
+        <div class="benefit-box">
+            <strong>{tier_name} benefits</strong>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    for benefit in TIER_BENEFITS[tier_name]:
+        st.markdown(f"- {benefit}")
+
+with st.expander("How the estimate is calculated"):
+    st.write(
+        "This tool uses your selected game, average bet, house edge, and rounds or hands per hour to estimate the amount of play needed to reach your selected point goal."
+    )
+
+    if profile.points_mode == "coin_in":
+        st.code(
+            f"required total action = point goal Ã— dollars per point\n"
+            f"required total action = {goal_points:,} Ã— ${profile.dollars_per_point:,.2f} = ${results['required_coin_in']:,.2f}\n\n"
+            f"estimated theoretical loss = required total action Ã— house edge\n"
+            f"estimated theoretical loss = ${results['required_coin_in']:,.2f} Ã— {house_edge_percent:.2f}% = ${results['required_theoretical_loss']:,.2f}\n\n"
+            f"required rounds or hands = required total action Ã· average bet\n"
+            f"required rounds or hands = ${results['required_coin_in']:,.2f} Ã· ${average_bet:,.2f} = {results['required_rounds']:,.0f}\n\n"
+            f"required hours = required rounds or hands Ã· rounds or hands per hour\n"
+            f"required hours = {results['required_rounds']:,.0f} Ã· {rounds_per_hour} = {results['required_hours']:,.2f}"
+        )
+    else:
+        st.code(
+            f"estimated theoretical loss needed = point goal Ã— estimated theoretical loss per point\n"
+            f"estimated theoretical loss needed = {goal_points:,} Ã— ${profile.theoretical_loss_per_point:,.2f} = ${results['required_theoretical_loss']:,.2f}\n\n"
+            f"required total action = estimated theoretical loss needed Ã· house edge\n"
+            f"required total action = ${results['required_theoretical_loss']:,.2f} Ã· {house_edge_percent:.2f}% = ${results['required_coin_in']:,.2f}\n\n"
+            f"required rounds or hands = required total action Ã· average bet\n"
+            f"required rounds or hands = ${results['required_coin_in']:,.2f} Ã· ${average_bet:,.2f} = {results['required_rounds']:,.0f}\n\n"
+            f"required hours = required rounds or hands Ã· rounds or hands per hour\n"
+            f"required hours = {results['required_rounds']:,.0f} Ã· {rounds_per_hour} = {results['required_hours']:,.2f}"
+        )
+
+with st.expander("Official tier ranges"):
+    st.markdown(
+        "- Prime: 2,500 to 24,999 points\n"
+        "- Signature: 25,000 to 99,999 points\n"
+        "- Masters: 100,000+ points"
     )
