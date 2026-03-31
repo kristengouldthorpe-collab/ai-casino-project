@@ -349,7 +349,7 @@ tier_name = get_tier_name(goal_points)
 
 playful_divider()
 
-st.markdown('<div class="result-card"><div class="result-label">Hours you need to play</div>'
+st.markdown('<div class="result-card"><div class="result-label">Approx. hours you need to play</div>'
             f'<div class="result-value">{results["required_hours"]:,.1f}</div></div>', unsafe_allow_html=True)
 
 st.markdown('<div class="result-card"><div class="result-label">Estimated theoretical loss</div>'
