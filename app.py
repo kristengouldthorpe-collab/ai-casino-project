@@ -155,9 +155,9 @@ GAME_PROFILES: Dict[str, GameProfile] = {
 
 
 GOAL_OPTIONS: List[tuple[str, int]] = [
-    ("Prime” 2,500 points", 2500),
-    ("Signature” 25,000 points", 25000),
-    ("Masters” 100,000 points", 100000),
+    ("Prime 2,500 points", 2500),
+    ("Signature 25,000 points", 25000),
+    ("Masters 100,000 points", 100000),
     ("400 points", 400),
     ("600 points", 600),
     ("800 points", 800),
