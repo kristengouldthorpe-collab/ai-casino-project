@@ -301,17 +301,6 @@ def playful_divider() -> None:
 st.title("Royal Caribbean Casino Royale")
 st.caption("Choose your game, choose your point goal, and see how long it may take to get there.")
 
-st.markdown(
-    f"""
-    <div class="hero-card">
-        <div class="small-note">
-            This version keeps the original assumptions for each game, but changes the flow so you start with a target.
-            The app then estimates how many hours you may need to play and what your estimated theoretical loss could be.
-        </div>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
 
 playful_divider()
 
