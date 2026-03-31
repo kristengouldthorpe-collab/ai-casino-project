@@ -267,7 +267,7 @@ def human_explanation(game: str, goal_points: int, results: dict, profile: GameP
     base = (
         f"To reach {goal_points:,} points playing {game}, you would need about {timing_text}. "
         f"That works out to around {rounds:,.0f} hands or spins, around ${coin_in:,.0f} in total action, and an estimated ${loss:,.0f} in theoretical loss. "
-        f"Friendly reality check - Real play doesn't follow a script. Some sessions will run betterm some worse. That's part of the game!"
+        f"Friendly reality check - Real play doesn't follow a script. Some sessions will run betterm some worse. That's part of the game! "
     )
 
     if profile.points_mode == "coin_in":
@@ -280,7 +280,7 @@ def human_explanation(game: str, goal_points: int, results: dict, profile: GameP
         )
 
     if tier_name == "Prime":
-        close = "If your real goal is to unlock free casino drinks and the annual interior cruise benefit, Prime is the first big milestone. Keep in mind, this status can be earned over the course of the casino year, which runs from approx. April 1 thru March 31st."
+        close = "If your real goal is to unlock free casino drinks and the annual interior cruise benefit, Prime is the first big milestone. Keep in mind, this status can be earned over the course of the casino year, which runs from approx. April 1 thru March 31st. "
     elif tier_name == "Signature":
         close = "Signature is a major jump because you move into stronger annual cruise value and extra onboard perks."
     elif tier_name == "Masters":
@@ -386,31 +386,11 @@ if tier_name in TIER_BENEFITS:
 
 with st.expander("How the estimate is calculated"):
     st.write(
-        "This tool uses your selected game, average bet, house edge, and rounds or hands per hour to estimate the amount of play needed to reach your selected point goal. This is for informational and entertainment purposes only and was created by a fellow RC guest. It is not financial or gambling advice. Please play responsibily."
+        "This tool uses your selected game, average bet, house edge, and rounds or hands per hour to estimate the amount of play needed to reach your selected point goal. "
+        "This is for informational and entertainment purposes only and was created by a fellow RC guest. " 
+        "It is not financial or gambling advice. Please play responsibily. "
     )
 
-    if profile.points_mode == "coin_in":
-        st.code(
-            f"required total action = point goal Ã— dollars per point\n"
-            f"required total action = {goal_points:,} Ã— ${profile.dollars_per_point:,.2f} = ${results['required_coin_in']:,.2f}\n\n"
-            f"estimated theoretical loss = required total action Ã— house edge\n"
-            f"estimated theoretical loss = ${results['required_coin_in']:,.2f} Ã— {house_edge_percent:.2f}% = ${results['required_theoretical_loss']:,.2f}\n\n"
-            f"required rounds or hands = required total action Ã· average bet\n"
-            f"required rounds or hands = ${results['required_coin_in']:,.2f} Ã· ${average_bet:,.2f} = {results['required_rounds']:,.0f}\n\n"
-            f"required hours = required rounds or hands Ã· rounds or hands per hour\n"
-            f"required hours = {results['required_rounds']:,.0f} Ã· {rounds_per_hour} = {results['required_hours']:,.2f}"
-        )
-    else:
-        st.code(
-            f"estimated theoretical loss needed = point goal Ã— estimated theoretical loss per point\n"
-            f"estimated theoretical loss needed = {goal_points:,} Ã— ${profile.theoretical_loss_per_point:,.2f} = ${results['required_theoretical_loss']:,.2f}\n\n"
-            f"required total action = estimated theoretical loss needed Ã· house edge\n"
-            f"required total action = ${results['required_theoretical_loss']:,.2f} Ã· {house_edge_percent:.2f}% = ${results['required_coin_in']:,.2f}\n\n"
-            f"required rounds or hands = required total action Ã· average bet\n"
-            f"required rounds or hands = ${results['required_coin_in']:,.2f} Ã· ${average_bet:,.2f} = {results['required_rounds']:,.0f}\n\n"
-            f"required hours = required rounds or hands Ã· rounds or hands per hour\n"
-            f"required hours = {results['required_rounds']:,.0f} Ã· {rounds_per_hour} = {results['required_hours']:,.2f}"
-        )
 
 with st.expander("Official tier ranges"):
     st.markdown(
