@@ -279,7 +279,7 @@ def human_explanation(game: str, goal_points: int, results: dict, profile: GameP
     else:
         close = "While this isn't a large milestone, you can check with the casino host to understand what instant certificates you will earn for this cruise based upon these points. Keep in mind, instant certificates are earned based upon the points earned on a single cruise. "
 
-    return base + method + close
+    return base + close
 
 
 
