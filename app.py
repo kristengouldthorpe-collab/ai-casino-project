@@ -266,27 +266,18 @@ def human_explanation(game: str, goal_points: int, results: dict, profile: GameP
 
     base = (
         f"To reach {goal_points:,} points playing {game}, you would need about {timing_text}. "
-        f"That works out to around {rounds:,.0f} hands or spins, around ${coin_in:,.0f} in total action, and an estimated ${loss:,.0f} in theoretical loss. "
-        f"Friendly reality check - Real play doesn't follow a script. Some sessions will run betterm some worse. That's part of the game! "
+        f"That works out to around {rounds:,.0f} hands or spins, around \\${coin_in:,.0f} in total action, and an estimated \\${loss:,.0f} in theoretical loss. <br><br> "
+        f"Friendly reality check - Real play doesn't follow a script. Some sessions will run better some worse. That's part of the game! <br><br> "
     )
-
-    if profile.points_mode == "coin_in":
-        method = (
-            "Because this game earns points from the amount you cycle through the machine, your points are fairly straightforward to estimate. "
-        )
-    else:
-        method = (
-            "Because this is a table game, Royal Caribbean does not publish a point formula, so this result is best used as a planning estimate rather than a guarantee. "
-        )
 
     if tier_name == "Prime":
         close = "If your real goal is to unlock free casino drinks and the annual interior cruise benefit, Prime is the first big milestone. Keep in mind, this status can be earned over the course of the casino year, which runs from approx. April 1 thru March 31st. "
     elif tier_name == "Signature":
-        close = "Signature is a major jump because you move into stronger annual cruise value and extra onboard perks."
+        close = "Signature is a major jump because you move into stronger annual cruise value and extra onboard perks. Keep in mind, this status can be earned over the course of the casino year, which runs from approx. April 1 thru March 31st. "
     elif tier_name == "Masters":
-        close = "Masters is the top level, so this is a serious high-play target rather than a casual milestone."
+        close = "Masters is the top level, so this is a serious high-play target rather than a casual milestone. Keep in mind, this status can be earned over the course of the casino year, which runs from approx. April 1 thru March 31st. "
     else:
-        close = "While this isn't a large milestone, you can check with the casino host to understand what instant certificates you will earn for this cruise based upon these points."
+        close = "While this isn't a large milestone, you can check with the casino host to understand what instant certificates you will earn for this cruise based upon these points. Keep in mind, instant certificates are earned based upon the points earned on a single cruise. "
 
     return base + method + close
 
@@ -309,7 +300,7 @@ selected_game = st.selectbox("Select game", list(GAME_PROFILES.keys()))
 profile = GAME_PROFILES[selected_game]
 
 average_bet = st.number_input(
-    "Average bet per hand or spin ($)",
+    "Average bet per hand,spin, or shooter ($)",
     min_value=0.01,
     value=5.0,
     step=1.0,
