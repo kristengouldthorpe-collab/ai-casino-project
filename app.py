@@ -145,7 +145,7 @@ GAME_PROFILES: Dict[str, GameProfile] = {
     ),
     "Craps": GameProfile(
         name="Craps",
-        house_edge=0.009,
+        house_edge=0.012,
         rounds_per_hour=10,
         points_mode="coin_in",
         dollars_per_point=13.0,
