@@ -145,10 +145,10 @@ GAME_PROFILES: Dict[str, GameProfile] = {
     ),
     "Craps": GameProfile(
         name="Craps",
-        house_edge=0.0075,
+        house_edge=0.009,
         rounds_per_hour=10,
         points_mode="coin_in",
-        dollars_per_point=15.0,
+        dollars_per_point=13.0,
         note="Royal Caribbean does not publish a simple public point formula for table games, so this model assumes disciplined play and estimates points based on reports from other players.",
     ),
 }
@@ -324,7 +324,7 @@ st.subheader("Editable assumptions")
 col1, col2 = st.columns(2)
 with col1:
     rounds_per_hour = st.number_input(
-        "Rounds or hands per hour",
+        "Rounds or hands (or shooters) per hour",
         min_value=1,
         value=profile.rounds_per_hour,
         step=1,
@@ -386,7 +386,7 @@ if tier_name in TIER_BENEFITS:
 
 with st.expander("How the estimate is calculated"):
     st.write(
-        "This tool uses your selected game, average bet, house edge, and rounds or hands per hour to estimate the amount of play needed to reach your selected point goal. "
+        "This tool uses your selected game, average bet, house edge, and rounds or hands (or shooters) per hour to estimate the amount of play needed to reach your selected point goal. "
         "This is for informational and entertainment purposes only and was created by a fellow RC guest. " 
         "It is not financial or gambling advice. Please play responsibily. "
     )
