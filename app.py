@@ -148,7 +148,7 @@ GAME_PROFILES: Dict[str, GameProfile] = {
         house_edge=0.005,
         rounds_per_hour=10,
         points_mode="coin_in",
-        dollars_per_point=35.0,
+        dollars_per_point=17.0,
         note="Royal Caribbean does not publish a simple public point formula for table games, so this model assumes disciplined play and estimates points based on average bet multiplied by hours played.",
     ),
 }
