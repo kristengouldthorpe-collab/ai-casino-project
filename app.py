@@ -132,7 +132,7 @@ GAME_PROFILES: Dict[str, GameProfile] = {
         house_edge=0.015,
         rounds_per_hour=60,
         points_mode="coin_in",
-        dollars_per_point=13.0,
+        dollars_per_point=20.0,
         note="Royal Caribbean does not publish a simple public point formula for table games, so this uses an estimate based on reports from other players."
     ),
     "Three Card Poker": GameProfile(
