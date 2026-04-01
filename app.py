@@ -266,8 +266,8 @@ def human_explanation(game: str, goal_points: int, results: dict, profile: GameP
 
     base = (
         f"To reach {goal_points:,} points playing {game}, you would need about {timing_text}. "
-        f"That works out to around {rounds:,.0f} hands or spins, around \\${coin_in:,.0f} in total action, and an estimated \\${loss:,.0f} in theoretical loss. <br><br> "
-        f"Friendly reality check - Real play doesn't follow a script. Some sessions will run better some worse. That's part of the game! <br><br> "
+        f"That works out to around {rounds:,.0f} hands or spins, around \\${coin_in:,.0f} in total action, and an estimated \\${loss:,.0f} in theoretical loss. "
+        f"Friendly reality check - Real play doesn't follow a script. Some sessions will run better some worse. That's part of the game! "
     )
 
     if tier_name == "Prime":
