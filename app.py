@@ -130,16 +130,16 @@ GAME_PROFILES: Dict[str, GameProfile] = {
     "Blackjack": GameProfile(
         name="Blackjack",
         house_edge=0.015,
-        rounds_per_hour=70,
-        points_mode="theoretical_loss",
-        theoretical_loss_per_point=5.0,
-        note="Royal Caribbean does not publish a simple public point formula for table games, so this uses an estimate based on theoretical loss.",
+        rounds_per_hour=60,
+        points_mode="coin_in",
+        dollars_per_point=13.0,
+        note="Royal Caribbean does not publish a simple public point formula for table games, so this uses an estimate based on reports from other players.
     ),
     "Three Card Poker": GameProfile(
         name="Three Card Poker",
         house_edge=0.034,
         rounds_per_hour=50,
-        points_mode="theoretical_loss",
+        points_mode="coin_in",
         theoretical_loss_per_point=5.0,
         note="Royal Caribbean does not publish a simple public point formula for table games, so this uses an estimate based on theoretical loss.",
     ),
@@ -149,7 +149,7 @@ GAME_PROFILES: Dict[str, GameProfile] = {
         rounds_per_hour=10,
         points_mode="coin_in",
         dollars_per_point=13.0,
-        note="Royal Caribbean does not publish a simple public point formula for table games, so this model assumes disciplined play and estimates points based on reports from other players.",
+        note="Royal Caribbean does not publish a point formula for tables, so this model assumes disciplined play and estimates points based on reports from other players. Players suggest Royal doesn't rate money played on the pass line.",
     ),
 }
 
