@@ -140,7 +140,7 @@ GAME_PROFILES: Dict[str, GameProfile] = {
         house_edge=0.034,
         rounds_per_hour=50,
         points_mode="coin_in",
-        theoretical_loss_per_point=5.0,
+        dollars_per_point=13.0,
         note="Royal Caribbean does not publish a simple public point formula for table games, so this uses an estimate based on theoretical loss.",
     ),
     "Craps": GameProfile(
