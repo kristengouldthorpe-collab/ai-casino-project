@@ -145,11 +145,11 @@ GAME_PROFILES: Dict[str, GameProfile] = {
     ),
     "Craps": GameProfile(
         name="Craps",
-        house_edge=0.014,
-        rounds_per_hour=45,
-        points_mode="theoretical_loss",
-        theoretical_loss_per_point=5.0,
-        note="Royal Caribbean does not publish a simple public point formula for table games, so this uses an estimate based on theoretical loss.",
+        house_edge=0.009,
+        rounds_per_hour=35,
+        points_mode="coin_in",
+        dollars_per_point=35.0,
+        note="Royal Caribbean does not publish a simple public point formula for table games, so this model assumes disciplined play and estimates points based on average bet multiplied by hours played.",
     ),
 }
 
