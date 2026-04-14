@@ -116,7 +116,7 @@ GAME_PROFILES: Dict[str, GameProfile] = {
         house_edge=0.03,
         rounds_per_hour=500,
         points_mode="coin_in",
-        dollars_per_point=10.0,
+        dollars_per_point=15.0,
         note="Royal Caribbean publishes 1 point for every $10 of coin-in on video poker.",
     ),
     "Ultimate Texas Hold'em": GameProfile(
